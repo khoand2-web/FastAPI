@@ -1,23 +1,28 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import select
+from sqlmodel import select, Session
 from typing import List
 
 from database import get_session
 from models.product import Product
-from sqlmodel import Session
+from dependencies.auth_user import get_current_user   # ✔ đúng
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
-# CREATE
+
+# CREATE (yêu cầu đăng nhập)
 @router.post("/", response_model=Product, status_code=status.HTTP_201_CREATED)
-def create_product(product: Product, session: Session = Depends(get_session)):
+def create_product(
+    product: Product,
+    session: Session = Depends(get_session),
+    user=Depends(get_current_user)    # ✔ yêu cầu JWT
+):
     session.add(product)
     session.commit()
     session.refresh(product)
     return product
 
 
-# LIST with Pagination + Search + Sort
+# LIST
 @router.get("/", response_model=List[Product])
 def list_products(
     page: int = 1,
@@ -28,11 +33,9 @@ def list_products(
 ):
     query = select(Product)
 
-    # SEARCH
     if search:
         query = query.where(Product.name.contains(search))
 
-    # SORT
     if sort:
         if sort == "price_asc":
             query = query.order_by(Product.price.asc())
@@ -43,10 +46,8 @@ def list_products(
         elif sort == "name_desc":
             query = query.order_by(Product.name.desc())
 
-    # PAGINATION
     offset = (page - 1) * limit
     products = session.exec(query.offset(offset).limit(limit)).all()
-
     return products
 
 
@@ -59,9 +60,14 @@ def get_product(product_id: int, session: Session = Depends(get_session)):
     return product
 
 
-# UPDATE
+# UPDATE (yêu cầu đăng nhập)
 @router.put("/{product_id}", response_model=Product)
-def update_product(product_id: int, updated: Product, session: Session = Depends(get_session)):
+def update_product(
+    product_id: int,
+    updated: Product,
+    session: Session = Depends(get_session),
+    user=Depends(get_current_user)    # ✔ yêu cầu JWT
+):
     product = session.get(Product, product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -77,9 +83,13 @@ def update_product(product_id: int, updated: Product, session: Session = Depends
     return product
 
 
-# DELETE
+# DELETE (yêu cầu đăng nhập)
 @router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_product(product_id: int, session: Session = Depends(get_session)):
+def delete_product(
+    product_id: int,
+    session: Session = Depends(get_session),
+    user=Depends(get_current_user)     # ✔ yêu cầu JWT
+):
     product = session.get(Product, product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
