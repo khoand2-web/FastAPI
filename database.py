@@ -1,9 +1,7 @@
 from sqlmodel import SQLModel, create_engine, Session
 
-from models.user import User
-from models.product import Product   # bắt buộc để tạo bảng
-
-DATABASE_URL = "sqlite:///./Shop.db"
+DATABASE_URL = "postgresql+psycopg2://postgres:230303@localhost:5432/shopdb"
+# nhớ đổi password nếu bạn đặt khác
 
 engine = create_engine(DATABASE_URL, echo=True)
 
