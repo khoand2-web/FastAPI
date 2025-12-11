@@ -1,8 +1,12 @@
-from sqlmodel import SQLModel, create_engine
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 from app.core.config import settings
-print("DEBUG ENV:", settings)
 
-engine = create_engine(settings.POSTGRES_URL, echo=True)
+# SQLAlchemy base class
+Base = declarative_base()
 
-def create_db():
-    SQLModel.metadata.create_all(engine)
+# Create engine using DATABASE_URL in .env
+engine = create_engine(settings.DATABASE_URL)
+
+# Session local
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

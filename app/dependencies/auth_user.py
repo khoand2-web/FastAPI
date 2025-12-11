@@ -3,8 +3,8 @@ from fastapi import Depends, HTTPException
 from jose import jwt, JWTError
 from sqlmodel import Session
 from core.config import settings
-from models.user import User
-from database import get_session
+from app.models.user_model import User
+from app.db.database import get_session
 
 oauth2 = HTTPBearer()
 
