@@ -16,9 +16,7 @@ from app.auth.oauth2 import oauth2_scheme
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-
-def get_user_service() -> UserService:
-    return UserService(UserRepository())
+user_service = UserService(UserRepository())
 
 
 @router.post(
@@ -29,9 +27,10 @@ def get_user_service() -> UserService:
 def register(
     user_in: UserCreate,
     db: Session = Depends(get_db),
-    user_service: UserService = Depends(get_user_service),
 ) -> UserRead:
-    """Register new user."""
+    """
+    Register new user.
+    """
     try:
         user = user_service.create_user(db, user_in)
     except ValueError as exc:
@@ -40,6 +39,7 @@ def register(
             detail=str(exc),
         )
 
+    # Pydantic v2
     return UserRead.model_validate(user)
 
 
@@ -47,9 +47,10 @@ def register(
 def login_for_token(
     login: LoginRequest,
     db: Session = Depends(get_db),
-    user_service: UserService = Depends(get_user_service),
 ) -> Token:
-    """Login and return JWT access token."""
+    """
+    Login and return JWT access token.
+    """
     user = user_service.authenticate(db, login.username, login.password)
     if not user:
         raise unauthorized("Incorrect username or password")
@@ -61,9 +62,10 @@ def login_for_token(
 def read_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     db: Session = Depends(get_db),
-    user_service: UserService = Depends(get_user_service),
 ) -> UserRead:
-    """Get current authenticated user."""
+    """
+    Get current authenticated user.
+    """
     try:
         payload = read_token(token)
     except JWTError:
@@ -72,8 +74,9 @@ def read_current_user(
     if not payload or not payload.sub:
         raise unauthorized("Invalid token payload")
 
-    user = user_service.get_by_id(db, int(payload.sub))
+    user = UserRepository.get_by_id(db, int(payload.sub))
     if not user:
         raise unauthorized("User not found")
 
+    # Pydantic v2
     return UserRead.model_validate(user)

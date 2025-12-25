@@ -1,23 +1,26 @@
-# app/routers/user_router.py
+# app/routers/users_router.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
+from app.schemas.user_schema import UserRead
 from app.repositories.user_repository import UserRepository
-from app.services.user_service import UserService
-from app.schemas.user_schema import UserCreate, UserRead
 
 router = APIRouter(prefix="/users", tags=["users"])
-user_service = UserService(UserRepository())
 
+@router.get("/{user_id}", response_model=UserRead)
+def get_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+) -> UserRead:
+    """
+    Get user by id.
+    """
+    user = UserRepository.get_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
 
-@router.post("/", response_model=UserRead, status_code=status.HTTP_201_CREATED)
-def create_user(payload: UserCreate, db: Session = Depends(get_db)) -> UserRead:
-    """
-    Create a new user.
-    """
-    try:
-        user = user_service.create_user(db, payload)
-    except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
-    return UserRead.from_orm(user)
+    return UserRead.model_validate(user)
