@@ -11,6 +11,7 @@ def hash_password(password: str):
 def verify_password(plain: str, hashed: str):
     return pwd_context.verify(plain, hashed)
 
+
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(hours=2)
