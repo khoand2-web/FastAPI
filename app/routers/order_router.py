@@ -6,6 +6,7 @@ from app.db.database import get_db
 from app.services.order_service import create_order
 from app.schemas.order_schema import OrderCreate, OrderRead
 
+
 router = APIRouter(prefix="/orders", tags=["orders"])
 
 
