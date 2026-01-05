@@ -12,6 +12,7 @@ from app.dependencies.session import get_session
 from app.models.user import User
 from app.schemas.user import UserCreate, UserRead
 
+
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")

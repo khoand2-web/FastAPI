@@ -8,6 +8,8 @@ class UserCreate(BaseModel):
     password: str
 
 
+
+
 # Schema để trả về thông tin user (không có password)
 class UserRead(BaseModel):
     id: int
