@@ -13,6 +13,118 @@ Dự án backend **Web bán hàng** được xây dựng bằng **FastAPI**, s�
 
 ---
 
+## VAI TRÒ TRONG HỆ THỐNG
+* USER (người dùng)
+ - đăng ký và đăng nhập tài khoản
+ - xem danh sách và chi tiết sản phẩm
+ - thêm sản phẩm vào giỏ hàng
+ - tạo đơn hàng từ giỏ hàng
+ - xem lịch sử đơn hàng của bản thân
+* ADMIN (quản trị)
+ - quản lý danh mục sản phẩm (category)
+ - quản lý sản phẩm
+ - xem và quản lý đơn hàng của người dùng
+ - cập nhật trạng thái đơn hàng
+
+---
+
+## CÁC MODULE CHỨC NĂNG CHÍNH 
+
+---
+
+** Authentication (xác thực và phân quyền)
+
+* Chức năng
+- đăng ký tài khoản
+- đăng nhập và nhận access token
+- xác thực người dùng thông qua jwt
+- phân quyền user / admin
+
+* Luồng đăng nhập
+- người dùng gửi username và password
+- hệ thống xác thực thông tin đăng nhập
+- sinh jwt access token
+- token được sử dụng cho các API yêu cầu xác thực 
+
+----
+
+** USER 
+Module quản lý thông tin người dùng trong hệ thống 
+
+* chức năng
+- lưu trữ thông tin tài khoản người dùng
+- quản lý vai trò (user / admin)
+- liên hết với giỏ hàng và đơn hàng
+
+---
+
+** CATEGORY
+Danh mục được sử dụng để phân loại sản phẩm
+
+* Chức năng 
+- Admin : Tạo, cập nhật, xóa danh mục 
+- User : xem danh sách danh mục 
+
+* Mục đích 
+- giúp tổ chức sản phẩm rõ ràng 
+- hỗ trợ việc quản lý mở rộng sản phẩm 
+
+---
+
+** PRODUCT (sản phẩm)
+Module quản lý sản phẩm được bán trong hệ thống
+
+* Chức năng 
+- Admin:
+ + Tạo, cập nhật, xóa sản phẩm
+ + giá sản phẩm vào danh mục 
+- User:
+ + xem danh sách sản phẩm
+ + xem chi tiết mô tả sản phẩm
+
+* Thông tin sản phẩm
+- tên sản phẩm
+- giá
+- mô tả sản phẩm
+- số lượng tồn kho
+- danh mục 
+
+ ---
+
+** CART (giỏ hàng cho người dùng)
+Giỏ hàng cho phép người dùng lưu trữ sản phẩm trước khi đặt hàng
+
+* chức năng
+- thêm sản giỏ hàng
+- cập nhật số lượng sản phẩm trong giỏ
+- xóa sản phẩm khỏi giỏ hàng
+- mỗi user chỉ có một giỏ hàng riêng
+
+* Mục đích
+- hỗ trợ quá trình mua sắm 
+- chuẩn bị dữ liệu cho bước đặt hàng
+
+---
+
+** ORDER
+Module xử lý nghiệp vụ đăt hàng
+
+* chức năng
+- User:
+ + tạo đơn hàng từ giỏ hàng
+ + xem danh sách đơn hàng của bản thân
+- Admin:
+ + xem tất cả đơn hàng
+ + cập nhật trạng thái đơn hàng
+
+* Luồng đặt hàng
+- user thêm sản phẩm vào giỏ hàng
+- user thực hiện chechout
+- hệ thống tạo order và order items
+- admin xử lý và cập nhật trạng thái đơn hàng
+
+---
+
 ## 2. Cấu trúc thư mục (tóm tắt)
 
 ```
