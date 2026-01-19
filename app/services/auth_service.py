@@ -1,51 +1,30 @@
-# app/services/auth_service.py
-
-from jose import JWTError
+from datetime import timedelta
 from sqlalchemy.orm import Session
+from fastapi import HTTPException, status
 
-from app.auth.jwt_manager import create_user_token, read_token
-from app.core.exceptions import unauthorized
 from app.services.user_service import UserService
-from app.schemas.auth import Token
+from app.core.security import create_access_token
+from app.core.config import settings
 
 
 class AuthService:
-    """
-    Handle authentication business logic.
-
-    Responsibilities:
-    - Authenticate user credentials
-    - Issue JWT access token
-    - Resolve current user from JWT token
-    """
-
     def __init__(self, user_service: UserService):
         self.user_service = user_service
 
-    def login(self, db: Session, username: str, password: str) -> Token:
-        """
-        Authenticate user and return JWT access token.
-        """
+    def login(self, db: Session, username: str, password: str) -> str:
         user = self.user_service.authenticate(db, username, password)
         if not user:
-            raise unauthorized("Incorrect username or password")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
 
-        return create_user_token(user.id)
+        access_token_expires = timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
 
-    def get_current_user(self, db: Session, token: str):
-        """
-        Get current authenticated user from JWT token.
-        """
-        try:
-            payload = read_token(token)
-        except JWTError:
-            raise unauthorized("Could not validate credentials")
-
-        if not payload or not payload.sub:
-            raise unauthorized("Invalid token payload")
-
-        user = self.user_service.get_by_id(db, int(payload.sub))
-        if not user:
-            raise unauthorized("User not found")
-
-        return user
+        return create_access_token(
+            subject=user.id,
+            expires_delta=access_token_expires,
+        )

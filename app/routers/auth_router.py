@@ -1,24 +1,27 @@
 # app/routers/auth_router.py
-from typing import Annotated
-
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from jose import JWTError
 
 from app.db.database import get_db
-from app.schemas.auth import Token, LoginRequest
+from app.schemas.auth import LoginRequest, Token
 from app.schemas.user_schema import UserCreate, UserRead
 from app.services.user_service import UserService
+from app.services.auth_service import AuthService
 from app.repositories.user_repository import UserRepository
-from app.auth.jwt_manager import create_user_token, read_token
-from app.core.exceptions import unauthorized
-from app.auth.oauth2 import oauth2_scheme
+from app.core.security import get_current_user
+from app.models.user_model import User
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-def get_user_service() -> UserService:
+def get_user_service():
     return UserService(UserRepository())
+
+
+def get_auth_service(
+    user_service: UserService = Depends(get_user_service),
+):
+    return AuthService(user_service)
 
 
 @router.post(
@@ -30,16 +33,8 @@ def register(
     user_in: UserCreate,
     db: Session = Depends(get_db),
     user_service: UserService = Depends(get_user_service),
-) -> UserRead:
-    """Register new user."""
-    try:
-        user = user_service.create_user(db, user_in)
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
-        )
-
+):
+    user = user_service.create_user(db, user_in)
     return UserRead.model_validate(user)
 
 
@@ -47,33 +42,14 @@ def register(
 def login_for_token(
     login: LoginRequest,
     db: Session = Depends(get_db),
-    user_service: UserService = Depends(get_user_service),
-) -> Token:
-    """Login and return JWT access token."""
-    user = user_service.authenticate(db, login.username, login.password)
-    if not user:
-        raise unauthorized("Incorrect username or password")
-
-    return create_user_token(user.id)
+    auth_service: AuthService = Depends(get_auth_service),
+):
+    access_token = auth_service.login(db, login.username, login.password)
+    return Token(access_token=access_token, token_type="bearer")
 
 
 @router.get("/me", response_model=UserRead)
 def read_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)],
-    db: Session = Depends(get_db),
-    user_service: UserService = Depends(get_user_service),
-) -> UserRead:
-    """Get current authenticated user."""
-    try:
-        payload = read_token(token)
-    except JWTError:
-        raise unauthorized("Could not validate credentials")
-
-    if not payload or not payload.sub:
-        raise unauthorized("Invalid token payload")
-
-    user = user_service.get_by_id(db, int(payload.sub))
-    if not user:
-        raise unauthorized("User not found")
-
-    return UserRead.model_validate(user)
+    current_user: User = Depends(get_current_user),
+):
+    return UserRead.model_validate(current_user)
