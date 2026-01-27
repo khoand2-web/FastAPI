@@ -19,3 +19,6 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     is_superuser = Column(Boolean, default=False, nullable=False)
+
+    cart = relationship("Cart", back_populates="user", uselist=False,
+        cascade="all, delete-orphan",)

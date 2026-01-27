@@ -1,6 +1,6 @@
 # app/services/cart_service.py
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 
 from app.repositories.cart_repository import CartRepository
 from app.models.cart_item_model import CartItem
@@ -23,9 +23,7 @@ class CartService:
         item = CartRepository.get_item(db, cart.id, data.product_id)
         if item:
             item.quantity += data.quantity
-            db.commit()
-            db.refresh(item)
-            return item
+            return CartRepository.update_item(db, item)
 
         item = CartItem(
             cart_id=cart.id,
@@ -49,9 +47,7 @@ class CartService:
             return None
 
         item.quantity = data.quantity
-        db.commit()
-        db.refresh(item)
-        return item
+        return CartRepository.update_item(db, item)
 
     @staticmethod
     def clear_cart(db: Session, user_id: int):

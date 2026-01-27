@@ -1,49 +1,43 @@
-# app/routers/cart_router.py
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.schemas.cart_schema import (
-    CartRead,
-    CartItemCreate,
-    CartItemUpdate
-)
+from app.schemas.cart_schema import CartItemCreate, CartResponse
 from app.services.cart_service import CartService
-from app.dependencies.auth_user import get_current_user
+from app.core.security import get_current_user
 
-router = APIRouter(prefix="/cart", tags=["Cart"])
+router = APIRouter(prefix="/cart", tags=["cart"])
+
+cart_service = CartService()
 
 
-@router.get("/", response_model=CartRead)
-def get_cart(
+@router.get("/", response_model=CartResponse)
+def get_my_cart(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
 ):
-    return CartService.get_or_create_cart(db, current_user.id)
+    return cart_service.get_or_create_cart(db, current_user.id)
 
 
-@router.post("/items", status_code=status.HTTP_201_CREATED)
-def add_item(
+@router.post("/items")
+def add_item_to_cart(
     data: CartItemCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
 ):
-    return CartService.add_item(db, current_user.id, data)
+    return cart_service.add_to_cart(
+        db,
+        current_user.id,
+        data.product_id,
+        data.quantity,
+    )
 
 
-@router.put("/items/{item_id}")
-def update_item(
-    item_id: int,
-    data: CartItemUpdate,
+@router.delete("/items/{product_id}")
+def remove_item_from_cart(
+    product_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
 ):
-    return CartService.update_item(db, current_user.id, item_id, data)
-
-
-@router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
-def clear_cart(
-    db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
-):
-    CartService.clear_cart(db, current_user.id)
+    cart_service.remove_from_cart(db, current_user.id, product_id)
+    return {"message": "Item removed"}

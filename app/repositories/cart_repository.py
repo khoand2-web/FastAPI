@@ -36,7 +36,7 @@ class CartRepository:
         db.commit()
         db.refresh(item)
         return item
-
+    
     @staticmethod
     def delete_item(db: Session, item: CartItem):
         db.delete(item)
@@ -44,5 +44,6 @@ class CartRepository:
 
     @staticmethod
     def clear_cart(db: Session, cart: Cart):
-        cart.items.clear()
+        for item in cart.items[:]:
+            db.delete(item)
         db.commit()

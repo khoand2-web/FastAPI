@@ -6,10 +6,15 @@ from app.db.init_db import init_db
 from app.middleware.cors import add_cors
 from app.middleware.error_handler import register_error_handlers
 
-from app.routers import auth_router, user_router, product_router, order_router  # type: ignore
+from app.routers import auth_router, user_router, product_router, order_router, cart_router  # type: ignore
 
 configure_logging()
-app = FastAPI(title=settings.APP_NAME, debug=settings.DEBUG)
+
+app = FastAPI(
+    title="FastAPI VMO",
+    version="0.1.0",
+    debug=settings.DEBUG
+)
 
 # initialize DB
 @app.on_event("startup")
@@ -28,3 +33,4 @@ app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(product_router)
 app.include_router(order_router)
+app.include_router(cart_router)
