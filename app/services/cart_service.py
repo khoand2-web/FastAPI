@@ -55,3 +55,54 @@ class CartService:
         if not cart:
             return
         CartRepository.clear_cart(db, cart)
+
+    @staticmethod
+    def add_to_cart(db: Session, user_id: int, product_id: int, quantity: int):
+        """
+        Add product to cart. Router-friendly method.
+        
+        Args:
+            db: Database session
+            user_id: User ID
+            product_id: Product ID to add
+            quantity: Quantity to add
+        
+        Returns:
+            Updated or created cart item
+        """
+        cart = CartService.get_or_create_cart(db, user_id)
+
+        item = CartRepository.get_item(db, cart.id, product_id)
+        if item:
+            item.quantity += quantity
+            return CartRepository.update_item(db, item)
+
+        item = CartItem(
+            cart_id=cart.id,
+            product_id=product_id,
+            quantity=quantity
+        )
+        return CartRepository.add_item(db, item)
+
+    @staticmethod
+    def remove_from_cart(db: Session, user_id: int, product_id: int):
+        """
+        Remove product from cart.
+        
+        Args:
+            db: Database session
+            user_id: User ID
+            product_id: Product ID to remove
+        
+        Raises:
+            HTTPException: If cart or item not found
+        """
+        cart = CartRepository.get_by_user_id(db, user_id)
+        if not cart:
+            raise HTTPException(status_code=404, detail="Cart not found")
+
+        item = CartRepository.get_item(db, cart.id, product_id)
+        if not item:
+            raise HTTPException(status_code=404, detail="Item not found in cart")
+
+        CartRepository.delete_item(db, item)

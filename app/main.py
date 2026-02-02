@@ -5,24 +5,23 @@ from app.core.logging_config import configure_logging
 from app.db.init_db import init_db
 from app.middleware.cors import add_cors
 from app.middleware.error_handler import register_error_handlers
-
+from contextlib import asynccontextmanager
 from app.routers import auth_router, user_router, product_router, order_router, cart_router  # type: ignore
 
 configure_logging()
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db
+    yield
+
 app = FastAPI(
     title="FastAPI VMO",
     version="0.1.0",
-    debug=settings.DEBUG
+    debug=settings.DEBUG,
+    lifespan=lifespan
 )
 
-# initialize DB
-@app.on_event("startup")
-def startup_event() -> None:
-    """
-    Events to run at startup.
-    """
-    init_db()
 
 # include middleware
 add_cors(app)

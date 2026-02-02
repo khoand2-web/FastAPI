@@ -36,6 +36,12 @@ class CartRepository:
         db.commit()
         db.refresh(item)
         return item
+
+    @staticmethod
+    def update_item(db: Session, item: CartItem):
+        db.commit()
+        db.refresh(item)
+        return item
     
     @staticmethod
     def delete_item(db: Session, item: CartItem):
