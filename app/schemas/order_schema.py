@@ -3,6 +3,7 @@ from typing import List
 from pydantic import BaseModel
 
 
+
 class OrderItemCreate(BaseModel):
     """Request schema for creating an order item."""
     product_id: int

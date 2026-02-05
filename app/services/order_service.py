@@ -7,6 +7,7 @@ from app.models.order_item_model import OrderItem
 from app.repositories.product_repository import ProductRepository
 
 
+
 def create_order(db: Session, user_id: int, items: List[dict]) -> Order:
     """
     Create a simple order given items list [{"product_id": int, "quantity": int}, ...].
