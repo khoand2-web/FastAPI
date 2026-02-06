@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, ForeignKey, Float
 from app.db.database import Base
 
 
+
 class OrderItem(Base):
     """Order line item model."""
     __tablename__ = "order_items"

@@ -9,7 +9,12 @@ from app.repositories.product_repository import ProductRepository
 from app.schemas.order_schema import OrderCreate
 
 
+<<<<<<< HEAD
 def create_order(db: Session, user_id: int, order_in: OrderCreate) -> Order:
+=======
+
+def create_order(db: Session, user_id: int, items: List[dict]) -> Order:
+>>>>>>> b55da6f4b54d0f718164ea8ca6a2d658eb20a832
     """
     Create a simple order given items list.
 

@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship
 from app.db.database import Base
 
 
+
 class Order(Base):
     """Order header model."""
     __tablename__ = "orders"
