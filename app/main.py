@@ -1,17 +1,35 @@
+# app/main.py
 from fastapi import FastAPI
-from app.database import create_db
-from app.routers import products, users, auth
+from app.core.config import settings
+from app.core.logging_config import configure_logging
+from app.db.init_db import init_db
+from app.middleware.cors import add_cors
+from app.middleware.error_handler import register_error_handlers
+from contextlib import asynccontextmanager
+from app.routers import auth_router, user_router, product_router, order_router, cart_router  # type: ignore
 
-app = FastAPI()
+configure_logging()
 
-@app.on_event("startup")
-def on_startup():
-    create_db()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db
+    yield
 
-app.include_router(products.router)
-app.include_router(users.router)
-app.include_router(auth.router)
+app = FastAPI(
+    title="FastAPI VMO",
+    version="0.1.0",
+    debug=settings.DEBUG,
+    lifespan=lifespan
+)
 
-@app.get("/")
-def root():
-    return {"message": "API is running!"}
+
+# include middleware
+add_cors(app)
+register_error_handlers(app)
+
+# include routers
+app.include_router(auth_router)
+app.include_router(user_router)
+app.include_router(product_router)
+app.include_router(order_router)
+app.include_router(cart_router)

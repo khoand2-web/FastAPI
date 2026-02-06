@@ -1,1 +1,27 @@
-pip freeze > requirements.txt
+# ===== Core framework =====
+fastapi==0.115.0
+uvicorn[standard]==0.30.0
+pydantic==2.9.0
+
+# ===== Auth & Security =====
+python-jose[cryptography]==3.3.0
+passlib[argon2]==1.7.4
+email-validator==2.1.0
+
+# ===== Config =====
+pydantic-settings==2.5.0
+
+# ===== Database =====
+SQLAlchemy==2.0.20
+alembic==1.11.1
+psycopg[binary]==3.1.18
+
+# ===== File upload / Form =====
+python-multipart==0.0.6
+
+# ===== Testing =====
+pytest==7.4.0
+pytest-cov==4.1.0
+httpx==0.24.1
+
+
