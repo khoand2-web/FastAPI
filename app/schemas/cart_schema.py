@@ -16,16 +16,17 @@ class CartItemUpdate(BaseModel):
 
 class CartItemResponse(BaseModel):
     id: int
-    user_id: int
     product_id: int
     quantity: int
-    created_at: datetime
 
     class Config:
         from_attributes = True
 
 
 class CartResponse(BaseModel):
+    id: int
+    user_id: int
+    created_at: datetime
     items: List[CartItemResponse]
 
     class Config:

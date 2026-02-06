@@ -11,11 +11,19 @@ router = APIRouter(prefix="/orders", tags=["orders"])
 
 
 @router.post("/", response_model=OrderRead)
-def create_new_order(order_in: OrderCreate, db: Session = Depends(get_db),current_user=Depends(get_current_user)):
+def create_new_order(order_in: OrderCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
     """
     Create an order for current user.
     Note: authentication/authorization is not wired here for brevity.
     """
     
     user_id = current_user.id
+
+    order = create_order(
+        db=db,
+        user_id=user_id,
+        order_in=order_in
+    )
+
+    return order 
    
